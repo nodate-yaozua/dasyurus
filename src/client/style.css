@@ -1,0 +1,19 @@
+section {
+  background-color: #d7ebd7;
+  margin: 10px 0px;
+  padding: 5px;
+  border-radius: 10px;
+}
+
+#listening button {
+  font-size: 200%;
+}
+
+#midi-recording-playing button {
+  font-size: 200%;
+}
+
+#midi-recording-playing .file-list button {
+  font-size: revert;
+  margin: 0px 8px;
+}
