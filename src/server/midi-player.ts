@@ -1,6 +1,7 @@
 import log4js from "log4js"
 import midi from "midi"
 import MIDIFile from "midifile"
+import MIDIEvents from "midievents"
 
 const logger = log4js.getLogger()
 
@@ -11,7 +12,7 @@ export default class MidiPlayer {
   private startTime = 0
   private cursor = 0
 
-  constructor(private data: MIDIFile) {
+  constructor(private data: MIDIFile, private restrictEvents: boolean) {
   }
 
   public start() {
@@ -23,7 +24,6 @@ export default class MidiPlayer {
 
     const loop = () => {
       if (this.stopRequested) return
-      if (Math.random() < 0.00001) logger.debug("MIDI player ticker is alive")
       this.tick()
       setImmediate(loop)
     }
@@ -54,10 +54,17 @@ export default class MidiPlayer {
     while (this.cursor < this.midiEvents.length) {
       const event = this.midiEvents[this.cursor]
       if (event.playTime > time) break
-      const m0 = (event.subtype << 4) | event.channel
-      const m1 = event.param1
-      const m2 = event.param2
-      this.midiOutput.sendMessage([m0, m1, m2])
+      let shouldSend = true
+      if (this.restrictEvents) {
+        if (event.subtype != MIDIEvents.EVENT_MIDI_NOTE_ON && event.subtype != MIDIEvents.EVENT_MIDI_NOTE_OFF && event.subtype != MIDIEvents.EVENT_MIDI_CONTROLLER) shouldSend = false
+        if (event.subtype == MIDIEvents.EVENT_MIDI_CONTROLLER && (event.param1 != 0x40 && event.param1 != 0x42 && event.param1 != 0x43)) shouldSend = false
+      }
+      if (shouldSend) {
+        const m0 = (event.subtype << 4) | event.channel
+        const m1 = event.param1
+        const m2 = event.param2
+        this.midiOutput.sendMessage([m0, m1, m2])
+      }
       this.cursor++
     }
   }

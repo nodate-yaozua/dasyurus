@@ -1,4 +1,4 @@
-import { promises as fs } from "fs"
+import fs from "fs"
 import config from "./configuration"
 import log4js from "log4js"
 import MidiPlayer from "./midi-player"
@@ -26,15 +26,28 @@ export default class MidiRecorderPlayer {
 
     if (appendFilename != null) {
       this.currentMidiData = await this.loadFile(appendFilename)
-      this.currentFilename = appendFilename
+      const appendMatch = appendFilename.match(/^(.*)-append-(\d+)\.mid$/)
+      let baseName: string
+      let appendNum: number
+      if (appendMatch) {
+        baseName = appendMatch[1]
+        appendNum = Number(appendMatch[2]) + 1
+      } else {
+        baseName = appendFilename.slice(0, appendFilename.length - 4)
+        appendNum = 1
+      }
+      while (true) {
+        this.currentFilename = `${baseName}-append-${appendNum}.mid`
+        if (this.fileExists(this.currentFilename)) appendNum++
+        else break
+      }
     } else {
       this.currentMidiData = this.createEmptyMidiData()
       this.currentFilename = this.getDefaultFilename()
     }
-    // TODO
-    this.currentFilename = this.getDefaultFilename()
+    this.savePlaceholderFile(this.currentFilename)
 
-    this.midiPlayer = new MidiPlayer(this.currentMidiData)
+    this.midiPlayer = new MidiPlayer(this.currentMidiData, true)
     this.midiRecorder = new MidiRecorder(this.currentMidiData)
     this.midiPlayer.start()
     this.midiRecorder.start()
@@ -64,7 +77,7 @@ export default class MidiRecorderPlayer {
 
     const data = await this.loadFile(filename)
 
-    this.midiPlayer = new MidiPlayer(data)
+    this.midiPlayer = new MidiPlayer(data, true)
     this.midiPlayer.start()
     return true
   }
@@ -91,16 +104,27 @@ export default class MidiRecorderPlayer {
     return result
   }
 
+  private fileExists(filename: string) {
+    const inPath = config.midiDataDir + "/" + filename
+    return fs.existsSync(inPath)
+  }
+
   private async loadFile(filename: string) {
     logger.info(`Reading MIDI file from: ${filename}`)
     const inPath = config.midiDataDir + "/" + filename
-    const file = await fs.readFile(inPath)
+    const file = await fs.promises.readFile(inPath)
     return new MIDIFile(file)
+  }
+
+  private async savePlaceholderFile(filename: string) {
+    const outPath = config.midiDataDir + "/" + filename
+    await fs.promises.writeFile(outPath, new Uint8Array(0))
+    logger.info(`Placeholder MIDI file written to: ${filename}`)
   }
 
   private async saveFile(filename: string, data: MIDIFile) {
     const outPath = config.midiDataDir + "/" + filename
-    await fs.writeFile(outPath, new Uint8Array(data.getContent()))
+    await fs.promises.writeFile(outPath, new Uint8Array(data.getContent()))
     logger.info(`MIDI file written to: ${filename}`)
   }
 
@@ -116,7 +140,7 @@ export default class MidiRecorderPlayer {
   }
 
   public async listFiles(): Promise<string[]> {
-    const files = await fs.readdir("data/midi/")
+    const files = await fs.promises.readdir("data/midi/")
     return files.filter(e => e.endsWith(".mid"))
   }
 }

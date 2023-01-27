@@ -36,7 +36,7 @@ declare namespace midifile {
 
         getSMPTEFrames(): any;
 
-        getTickResolution(tempo: any): any;
+        getTickResolution(tempo?: any): any;
 
         getTicksPerBeat(): any;
 
