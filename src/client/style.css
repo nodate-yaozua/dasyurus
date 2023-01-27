@@ -5,15 +5,36 @@ section {
   border-radius: 10px;
 }
 
-#listening button {
-  font-size: 200%;
+#listening-start, #listening-stop {
+  font-size: 150%;
 }
 
-#midi-recording-playing button {
-  font-size: 200%;
+#midi-play-control, #midi-speed-control {
+  font-size: 150%;
+  margin-bottom: 10px;
 }
 
-#midi-recording-playing .file-list button {
-  font-size: revert;
-  margin: 0px 8px;
+#midi-play-control button, #midi-speed-control button {
+  font-size: inherit;
+}
+
+#midi-file-list {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#midi-file-list tr {
+  border-bottom: 1px solid gray;
+}
+
+#midi-file-list tr.selected {
+  background-color: rgba(128, 128, 128, 0.5);
+}
+
+#midi-file-list td {
+  word-break: break-all;
+}
+
+#midi-file-list button {
+  width: 80px;
 }

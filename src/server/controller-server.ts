@@ -37,6 +37,12 @@ export default class ControllerServer {
           case "list-midi-files":
             send({ type: "list-midi-files", result: await this.controllerInterface.listMidiFiles() })
             break
+          case "rename-midi-file":
+            send({ type: "rename-midi-file", result: await this.controllerInterface.renameMidiFile(parsedData.params?.oldFilename, parsedData.params?.newFilename) })
+            break
+          case "delete-midi-file":
+            send({ type: "delete-midi-file", result: await this.controllerInterface.deleteMidiFile(parsedData.params?.filename) })
+            break
           case "start-midi-recording":
             send({ type: "start-midi-recording", result: await this.controllerInterface.startMidiRecording(parsedData.params?.appendFilename) })
             break
@@ -48,6 +54,9 @@ export default class ControllerServer {
             break
           case "stop-midi-playing":
             send({ type: "stop-midi-playing", result: await this.controllerInterface.stopMidiPlaying() })
+            break
+          case "set-midi-speed":
+            send({ type: "set-midi-speed", result: await this.controllerInterface.setMidiSpeed(parsedData.params?.speed) })
             break
         }
       })

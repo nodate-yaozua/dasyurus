@@ -20,7 +20,6 @@ export default class MidiUtil {
     // Reading events
     // if the read is sequential
     if (1 !== format || 1 === midi.tracks.length) {
-      console.log("FORMAT 0")
       for (i = 0, j = midi.tracks.length; i < j; i++) {
         // reset playtime if format is 2
         playTime = 2 === format && playTime ? playTime : 0;
@@ -54,7 +53,6 @@ export default class MidiUtil {
       }
       // the read is concurrent
     } else {
-      console.log("FORMAT 1")
       trackParsers = [];
       smallestDelta = -1;
 

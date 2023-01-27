@@ -5,12 +5,15 @@ import MidiPlayer from "./midi-player"
 import MidiRecorder from "./midi-recorder"
 import MIDIFile from "midifile"
 import MIDIEvents from "midievents"
+import Timer from "./timer"
 
 const logger = log4js.getLogger()
 
 export default class MidiRecorderPlayer {
   private midiRecorder: MidiRecorder | null = null
   private midiPlayer: MidiPlayer | null = null
+  private timer: Timer | null = null
+  private currentSpeed = 1
   private currentFilename: string | null = null
   private currentMidiData: MIDIFile | null = null
 
@@ -47,8 +50,11 @@ export default class MidiRecorderPlayer {
     }
     this.savePlaceholderFile(this.currentFilename)
 
-    this.midiPlayer = new MidiPlayer(this.currentMidiData, true)
-    this.midiRecorder = new MidiRecorder(this.currentMidiData)
+    this.timer = new Timer()
+    this.timer.setSpeed(this.currentSpeed)
+    this.midiPlayer = new MidiPlayer(this.currentMidiData, this.timer, true)
+    this.midiRecorder = new MidiRecorder(this.currentMidiData, this.timer)
+    this.timer.start()
     this.midiPlayer.start()
     this.midiRecorder.start()
     return true
@@ -61,6 +67,7 @@ export default class MidiRecorderPlayer {
     this.midiPlayer?.stop()
     this.midiRecorder.stop()
     this.midiRecorder.write()
+    this.timer = null
     this.midiPlayer = null
     this.midiRecorder = null
     const filename = this.currentFilename!
@@ -77,18 +84,31 @@ export default class MidiRecorderPlayer {
 
     const data = await this.loadFile(filename)
 
-    this.midiPlayer = new MidiPlayer(data, true)
+    this.timer = new Timer()
+    this.timer.setSpeed(this.currentSpeed)
+    this.midiPlayer = new MidiPlayer(data, this.timer, true)
+    this.timer.start()
     this.midiPlayer.start()
     return true
   }
 
   public async stopPlaying() {
-    if (this.midiPlayer == null) return
+    if (this.midiPlayer == null) return false
 
     this.midiPlayer.stop()
+    this.timer = null
     this.midiPlayer = null
     this.currentFilename = null
     this.currentMidiData = null
+
+    return true
+  }
+
+  public async setSpeed(speed: number) {
+    this.currentSpeed = speed
+    if (this.timer != null) this.timer.setSpeed(speed)
+    logger.info(`MIDI speed changed: ${speed}`)
+    return true
   }
 
   private createEmptyMidiData() {
@@ -142,5 +162,23 @@ export default class MidiRecorderPlayer {
   public async listFiles(): Promise<string[]> {
     const files = await fs.promises.readdir("data/midi/")
     return files.filter(e => e.endsWith(".mid"))
+  }
+
+  public async renameFile(oldFilename: string, newFilename: string): Promise<boolean> {
+    if (!newFilename.endsWith(".mid")) newFilename += ".mid"
+    const oldPath = config.midiDataDir + "/" + oldFilename
+    const newPath = config.midiDataDir + "/" + newFilename
+    if (!fs.existsSync(oldPath) || fs.existsSync(newPath)) return false
+    await fs.promises.rename(oldPath, newPath)
+    logger.info(`MIDI file renamed: ${oldFilename} -> ${newFilename}`)
+    return true
+  }
+
+  public async deleteFile(filename: string): Promise<boolean> {
+    const path = config.midiDataDir + "/" + filename
+    if (!fs.existsSync(path)) return false
+    fs.promises.unlink(path)
+    logger.info(`MIDI file deleted: ${filename}`)
+    return true
   }
 }

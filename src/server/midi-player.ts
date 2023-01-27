@@ -2,6 +2,7 @@ import log4js from "log4js"
 import midi from "midi"
 import MIDIFile from "midifile"
 import MIDIEvents from "midievents"
+import Timer from "./timer"
 
 const logger = log4js.getLogger()
 
@@ -9,10 +10,9 @@ export default class MidiPlayer {
   private midiEvents: any[] | null = null
   private midiOutput: midi.Output | null = null
   private stopRequested = false
-  private startTime = 0
   private cursor = 0
 
-  constructor(private data: MIDIFile, private restrictEvents: boolean) {
+  constructor(private data: MIDIFile, private timer: Timer, private restrictEvents: boolean) {
   }
 
   public start() {
@@ -27,7 +27,6 @@ export default class MidiPlayer {
       this.tick()
       setImmediate(loop)
     }
-    this.startTime = performance.now() + 100
     loop()
 
     logger.info(`MIDI playing started`)
@@ -50,7 +49,7 @@ export default class MidiPlayer {
     if (this.midiOutput == null) return
     if (this.midiEvents == null) return
 
-    const time = performance.now() - this.startTime
+    const time = this.timer.next()
     while (this.cursor < this.midiEvents.length) {
       const event = this.midiEvents[this.cursor]
       if (event.playTime > time) break

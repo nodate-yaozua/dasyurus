@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <link rel="stylesheet" href="style.css">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="//unpkg.com/vanilla-context-menu@1.4.1/dist/vanilla-context-menu.js"></script>
   <title>Dasyurus Controller</title>
 </head>
 <body>
@@ -14,10 +15,34 @@
   </section>
 
   <section id="midi-recording-playing">
+    <template id="midi-recording-playing-file-list-table-row">
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+    </template>
     <h2 class="header">MIDI Recording/Playing:</h2>
-    <button id="midi-recording-start">Recording Start</button>
-    <button id="midi-stop">Stop</button>
-    <div class="file-list"></div>
+    <div>
+      <div id="midi-play-control">
+        <button id="midi-recording-start">Recording Start</button>
+        <button id="midi-stop">Stop</button>
+      </div>
+      <div id="midi-speed-control">
+        <button id="midi-speed-down">-</button>
+        <span id="midi-current-speed">x1.00</span>
+        <button id="midi-speed-up">+</button>
+        <button id="midi-speed-reset">x1.00</button>
+      </div>
+    </div>
+    <div>
+      <button id="midi-append-selected-file">Append</button>
+      <button id="midi-rename-selected-file">Rename</button>
+      <button id="midi-delete-selected-file">Delete</button>
+      <!--<div id="midi-selected-file"></div>-->
+    </div>
+    <table id="midi-file-list">
+      <tbody></tbody>
+    </table>
   </section>
 
   <section id="connected-bluetooth-devices">

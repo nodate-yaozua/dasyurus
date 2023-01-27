@@ -3,16 +3,16 @@ import midi from "midi"
 import MIDIFile from "midifile"
 import MIDIEvents from "midievents"
 import MidiUtil from "./midi-util"
+import Timer from "./timer"
 
 const logger = log4js.getLogger()
 
 export default class MidiRecorder {
-  private startTime = 0
   private rawTrackEvents: any[] = []
   private input!: midi.Input
   private tempoEvents: any[]
 
-  constructor(private data: MIDIFile) {
+  constructor(private data: MIDIFile, private timer: Timer) {
     this.tempoEvents = MidiUtil.getEventsEx(this.data, MIDIEvents.EVENT_META, MIDIEvents.EVENT_META_SET_TEMPO)
   }
 
@@ -20,7 +20,7 @@ export default class MidiRecorder {
     this.input = new midi.Input()
 
     this.input.on("message", (_, message) => {
-      const time = performance.now() - this.startTime
+      const time = this.timer.next()
       if (time < 0) return
 
       if (message[0] != 0x80 && message[0] != 0x90 && message[0] != 0xb0) return
@@ -32,7 +32,6 @@ export default class MidiRecorder {
       const param2 = message[2]
       this.rawTrackEvents.push({ playTime: time, type, subtype, channel, param1, param2 })
     })
-    this.startTime = performance.now() + 100
     this.input.openPort(1)
 
     logger.info("MIDI recording started")

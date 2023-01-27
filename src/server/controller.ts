@@ -23,6 +23,14 @@ export default class Controller implements ControllerInterface {
     return await this.midiRecorderPlayer.listFiles()
   }
 
+  public async renameMidiFile(oldFilename: string, newFilename: string) {
+    return await this.midiRecorderPlayer.renameFile(oldFilename, newFilename)
+  }
+
+  public async deleteMidiFile(filename: string) {
+    return await this.midiRecorderPlayer.deleteFile(filename)
+  }
+
   public async startMidiRecording(appendFilename: string | null) {
     return await this.midiRecorderPlayer.startRecording(appendFilename)
   }
@@ -39,19 +47,27 @@ export default class Controller implements ControllerInterface {
     return await this.midiRecorderPlayer.stopPlaying()
   }
 
+  public async setMidiSpeed(speed: number) {
+    return await this.midiRecorderPlayer.setSpeed(speed)
+  }
+
   public async flushActions() {
     if (this.midiRecorderPlayer.isRecording()) await this.midiRecorderPlayer.stopRecording()
     if (this.midiRecorderPlayer.isPlaying()) await this.midiRecorderPlayer.stopPlaying()
+    await this.midiRecorderPlayer.setSpeed(1)
   }
 }
 
 export interface ControllerInterface {
   listConnectedBluetoothDevices(): Promise<string[]>
   listMidiFiles(): Promise<string[]>
+  renameMidiFile(oldFilename: string, newFilename: string): Promise<boolean>
+  deleteMidiFile(filename: string): Promise<boolean>
   startMidiRecording(appendFilename: string | null): Promise<boolean>
   stopMidiRecording(): Promise<string | null>
   startMidiPlaying(filename: string): Promise<boolean>
-  stopMidiPlaying(): Promise<void>
+  stopMidiPlaying(): Promise<boolean>
+  setMidiSpeed(speed: number): Promise<boolean>
 
   flushActions(): Promise<void>
 }
