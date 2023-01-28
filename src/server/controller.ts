@@ -1,3 +1,4 @@
+import { MidiCreationOption } from "../common-types"
 import AudioReceiver from "./audio-receiver"
 import AudioSender from "./audio-sender"
 import ControllerServer from "./controller-server"
@@ -31,8 +32,8 @@ export default class Controller implements ControllerInterface {
     return await this.midiRecorderPlayer.deleteFile(filename)
   }
 
-  public async startMidiRecording(appendFilename: string | null) {
-    return await this.midiRecorderPlayer.startRecording(appendFilename)
+  public async startMidiRecording(appendFilename: string | null, creationOption: MidiCreationOption | null) {
+    return await this.midiRecorderPlayer.startRecording(appendFilename, creationOption)
   }
 
   public async stopMidiRecording() {
@@ -51,10 +52,15 @@ export default class Controller implements ControllerInterface {
     return await this.midiRecorderPlayer.setSpeed(speed)
   }
 
+  public async setMidiMetronomeEnabled(enabled: boolean) {
+    return await this.midiRecorderPlayer.setMetronomeEnabled(enabled)
+  }
+
   public async flushActions() {
     if (this.midiRecorderPlayer.isRecording()) await this.midiRecorderPlayer.stopRecording()
     if (this.midiRecorderPlayer.isPlaying()) await this.midiRecorderPlayer.stopPlaying()
     await this.midiRecorderPlayer.setSpeed(1)
+    await this.midiRecorderPlayer.setMetronomeEnabled(false)
   }
 }
 
@@ -63,11 +69,12 @@ export interface ControllerInterface {
   listMidiFiles(): Promise<string[]>
   renameMidiFile(oldFilename: string, newFilename: string): Promise<boolean>
   deleteMidiFile(filename: string): Promise<boolean>
-  startMidiRecording(appendFilename: string | null): Promise<boolean>
+  startMidiRecording(appendFilename: string | null, creationOption: MidiCreationOption | null): Promise<boolean>
   stopMidiRecording(): Promise<string | null>
   startMidiPlaying(filename: string): Promise<boolean>
   stopMidiPlaying(): Promise<boolean>
   setMidiSpeed(speed: number): Promise<boolean>
+  setMidiMetronomeEnabled(enabled: boolean): Promise<boolean>
 
   flushActions(): Promise<void>
 }

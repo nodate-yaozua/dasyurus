@@ -156,7 +156,10 @@ const initMidiRecordingPlaying = () => {
     if (recordingInProgress) return
     if (playingInProgress) return
 
-    await request("start-midi-recording")
+    const tempo = Number((document.querySelector("#midi-creation-tempo") as HTMLInputElement).value)
+    const timeSignatureNumerator = Number((document.querySelector("#midi-creation-time-signature-numer") as HTMLInputElement).value)
+    const timeSignatureDenominator = Number((document.querySelector("#midi-creation-time-signature-denom") as HTMLInputElement).value)
+    await request("start-midi-recording", { creationOption: { tempo: tempo, timeSignature: [timeSignatureNumerator, timeSignatureDenominator] } })
     recordingInProgress = true
 
     updateState()
@@ -225,11 +228,16 @@ const initMidiRecordingPlaying = () => {
     await request("set-midi-speed", { speed: multiplier })
   }
 
+  const setMetronomeEnabled = async (enabled: boolean) => {
+    await request("set-midi-metronome-enabled", { enabled })
+  }
+
   (document.querySelector("#midi-recording-start") as HTMLButtonElement).onclick =  _ => startRecording();
   (document.querySelector("#midi-stop") as HTMLButtonElement).onclick =  _ => stop();
   (document.querySelector("#midi-speed-up") as HTMLButtonElement).onclick =  _ => setSpeed(currentSpeed + 1);
   (document.querySelector("#midi-speed-down") as HTMLButtonElement).onclick =  _ => setSpeed(currentSpeed - 1);
   (document.querySelector("#midi-speed-reset") as HTMLButtonElement).onclick =  _ => setSpeed(0);
+  (document.querySelector("#midi-metronome") as HTMLInputElement).onchange =  ev => setMetronomeEnabled((ev.target as HTMLInputElement).checked);
   (document.querySelector("#midi-append-selected-file") as HTMLButtonElement).onclick =  _ => startAppendingSelectedFile();
   (document.querySelector("#midi-rename-selected-file") as HTMLButtonElement).onclick =  _ => renameSelectedFile();
   (document.querySelector("#midi-delete-selected-file") as HTMLButtonElement).onclick =  _ => deleteSelectedFile();

@@ -26,11 +26,20 @@
         <button id="midi-recording-start">Recording Start</button>
         <button id="midi-stop">Stop</button>
       </div>
+      <div id="midi-creation-control">
+        <span>♩=</span>
+        <input type="number" id="midi-creation-tempo" value="120"></input>
+        <input type="number" id="midi-creation-time-signature-numer" value="4"></input>
+        <span>/</span>
+        <input type="number" id="midi-creation-time-signature-denom" value="4"></input>
+      </div>
       <div id="midi-speed-control">
         <button id="midi-speed-down">-</button>
         <span id="midi-current-speed">x1.00</span>
         <button id="midi-speed-up">+</button>
         <button id="midi-speed-reset">x1.00</button>
+        <input type="checkbox" id="midi-metronome"></input>
+        <span>Metronome</span>
       </div>
     </div>
     <div>

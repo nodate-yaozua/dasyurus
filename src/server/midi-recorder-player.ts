@@ -6,6 +6,7 @@ import MidiRecorder from "./midi-recorder"
 import MIDIFile from "midifile"
 import MIDIEvents from "midievents"
 import Timer from "./timer"
+import { MidiCreationOption } from "../common-types"
 
 const logger = log4js.getLogger()
 
@@ -16,6 +17,7 @@ export default class MidiRecorderPlayer {
   private currentSpeed = 1
   private currentFilename: string | null = null
   private currentMidiData: MIDIFile | null = null
+  private metronomeEnabled = true
 
   public async init() {
   }
@@ -24,7 +26,7 @@ export default class MidiRecorderPlayer {
   public isPlaying() { return this.midiRecorder == null && this.midiPlayer != null }
   public isProcessing() { return this.midiRecorder != null || this.midiPlayer != null }
 
-  public async startRecording(appendFilename: string | null): Promise<boolean> {
+  public async startRecording(appendFilename: string | null, creationOption: MidiCreationOption | null): Promise<boolean> {
     if (this.isProcessing()) return false
 
     if (appendFilename != null) {
@@ -45,7 +47,7 @@ export default class MidiRecorderPlayer {
         else break
       }
     } else {
-      this.currentMidiData = this.createEmptyMidiData()
+      this.currentMidiData = this.createEmptyMidiData(creationOption)
       this.currentFilename = this.getDefaultFilename()
     }
     this.savePlaceholderFile(this.currentFilename)
@@ -53,6 +55,7 @@ export default class MidiRecorderPlayer {
     this.timer = new Timer()
     this.timer.setSpeed(this.currentSpeed)
     this.midiPlayer = new MidiPlayer(this.currentMidiData, this.timer, true)
+    this.midiPlayer.setMetronomeEnabled(this.metronomeEnabled)
     this.midiRecorder = new MidiRecorder(this.currentMidiData, this.timer)
     this.timer.start()
     this.midiPlayer.start()
@@ -87,6 +90,7 @@ export default class MidiRecorderPlayer {
     this.timer = new Timer()
     this.timer.setSpeed(this.currentSpeed)
     this.midiPlayer = new MidiPlayer(data, this.timer, true)
+    this.midiPlayer.setMetronomeEnabled(this.metronomeEnabled)
     this.timer.start()
     this.midiPlayer.start()
     return true
@@ -111,13 +115,23 @@ export default class MidiRecorderPlayer {
     return true
   }
 
-  private createEmptyMidiData() {
+  public async setMetronomeEnabled(enabled: boolean) {
+    this.metronomeEnabled = enabled
+    if (this.midiPlayer != null) this.midiPlayer.setMetronomeEnabled(enabled)
+    logger.info(`MIDI metronome ${enabled ? "enabled" : "disabled"}`)
+    return true
+  }
+
+  private createEmptyMidiData(creationOption: MidiCreationOption | null) {
+    if (creationOption == null) creationOption = { tempo: 60, timeSignature: [4, 4] }
     const result = new MIDIFile()
     result.header.setFormat(1)
     result.header.setTicksPerBeat(480)
 
     const conductorTrackEvents: any[] = []
-    conductorTrackEvents.push({ delta: 0, type: MIDIEvents.EVENT_META, subtype: MIDIEvents.EVENT_META_SET_TEMPO, length: 3, tempo: 1000000 }) // 60BPM
+    const timeSignatureData = [creationOption.timeSignature[0], Math.log2(creationOption.timeSignature[1]), 24, 8]
+    conductorTrackEvents.push({ delta: 0, type: MIDIEvents.EVENT_META, subtype: MIDIEvents.EVENT_META_SET_TEMPO, length: 3, tempo: 60000000 / creationOption.tempo })
+    conductorTrackEvents.push({ delta: 0, type: MIDIEvents.EVENT_META, subtype: MIDIEvents.EVENT_META_TIME_SIGNATURE, length: 4, data: timeSignatureData })
     conductorTrackEvents.push({ delta: 0, type: MIDIEvents.EVENT_META, subtype: MIDIEvents.EVENT_META_END_OF_TRACK, length: 0 })
     result.setTrackEvents(0, conductorTrackEvents)
 

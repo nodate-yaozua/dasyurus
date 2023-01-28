@@ -44,7 +44,7 @@ export default class ControllerServer {
             send({ type: "delete-midi-file", result: await this.controllerInterface.deleteMidiFile(parsedData.params?.filename) })
             break
           case "start-midi-recording":
-            send({ type: "start-midi-recording", result: await this.controllerInterface.startMidiRecording(parsedData.params?.appendFilename) })
+            send({ type: "start-midi-recording", result: await this.controllerInterface.startMidiRecording(parsedData.params?.appendFilename, parsedData.params?.creationOption) })
             break
           case "stop-midi-recording":
             send({ type: "stop-midi-recording", result: await this.controllerInterface.stopMidiRecording() })
@@ -57,6 +57,9 @@ export default class ControllerServer {
             break
           case "set-midi-speed":
             send({ type: "set-midi-speed", result: await this.controllerInterface.setMidiSpeed(parsedData.params?.speed) })
+            break
+          case "set-midi-metronome-enabled":
+            send({ type: "set-midi-metronome-enabled", result: await this.controllerInterface.setMidiMetronomeEnabled(parsedData.params?.enabled) })
             break
         }
       })

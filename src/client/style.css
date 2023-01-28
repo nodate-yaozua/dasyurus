@@ -9,13 +9,34 @@ section {
   font-size: 150%;
 }
 
-#midi-play-control, #midi-speed-control {
+#midi-play-control, #midi-creation-control, #midi-speed-control {
   font-size: 150%;
   margin-bottom: 10px;
 }
 
 #midi-play-control button, #midi-speed-control button {
   font-size: inherit;
+}
+
+#midi-creation-control input[type=number] {
+  font-size: inherit;
+}
+
+#midi-creation-tempo {
+  width: 80px;
+  margin-right: 10px;
+}
+
+#midi-creation-time-signature-numer, #midi-creation-time-signature-denom {
+  width: 50px;
+}
+
+#midi-speed-control input[type=checkbox] {
+  transform: scale(2);
+}
+
+#midi-speed-reset {
+  margin-right: 10px;
 }
 
 #midi-file-list {
