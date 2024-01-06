@@ -3,6 +3,7 @@ import AudioReceiver from "./audio-receiver"
 import AudioSender from "./audio-sender"
 import Controller from "./controller"
 import MidiRecorderPlayer from "./midi-recorder-player"
+import Page from "./page"
 
 log4js.configure({
   appenders: {
@@ -26,4 +27,7 @@ log4js.configure({
   
   const controller = new Controller(audioReceiver, audioSender, midiRecorderPlayer)
   await controller.init()
+
+  const page = new Page()
+  await page.init()
 })()
