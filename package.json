@@ -20,14 +20,14 @@
   },
   "scripts": {
     "watch": "parcel watch",
+    "build": "parcel build",
     "server": "node dist/server/index.js"
   },
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@types/midi": "^2.0.0",
+    "@julusian/midi": "^3.1.0",
     "log4js": "^6.7.1",
-    "midi": "^2.0.0",
     "midievents": "^2.0.0",
     "midifile": "^2.0.0",
     "parcel": "^2.8.3",

@@ -1,5 +1,5 @@
 import log4js from "log4js"
-import midi from "midi"
+import midi from "@julusian/midi"
 import MIDIFile from "midifile"
 import MIDIEvents from "midievents"
 import Timer from "./timer"
