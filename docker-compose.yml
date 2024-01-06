@@ -1,0 +1,17 @@
+# Example
+version: "3"
+
+services:
+  dasyurus:
+    build: .
+    # for ease. use with caution!
+    network_mode: host
+    privileged: true
+    devices:
+      - /dev/snd:/dev/snd
+    volumes:
+      - ./data:/app/data
+      - ./bluetooth:/var/lib/bluetooth
+    environment:
+      SINK_DEVICE: "front:CARD=RD88,DEV=0"
+      SOURCE_DEVICE: "front:CARD=RD88,DEV=0"

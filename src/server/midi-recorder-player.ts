@@ -20,6 +20,7 @@ export default class MidiRecorderPlayer {
   private metronomeEnabled = true
 
   public async init() {
+    this.prepareMidiDataDir()
   }
 
   public isRecording() { return this.midiRecorder != null }
@@ -138,26 +139,38 @@ export default class MidiRecorderPlayer {
     return result
   }
 
+  private getMidiDataDir() {
+    return config.dataDir + "/midi"
+  }
+
+  private prepareMidiDataDir() {
+    try {
+      fs.accessSync(this.getMidiDataDir(), fs.constants.R_OK | fs.constants.W_OK)
+    } catch {
+      fs.mkdirSync(this.getMidiDataDir())
+    }
+  }
+
   private fileExists(filename: string) {
-    const inPath = config.midiDataDir + "/" + filename
+    const inPath = this.getMidiDataDir() + "/" + filename
     return fs.existsSync(inPath)
   }
 
   private async loadFile(filename: string) {
     logger.info(`Reading MIDI file from: ${filename}`)
-    const inPath = config.midiDataDir + "/" + filename
+    const inPath = this.getMidiDataDir() + "/" + filename
     const file = await fs.promises.readFile(inPath)
     return new MIDIFile(file)
   }
 
   private async savePlaceholderFile(filename: string) {
-    const outPath = config.midiDataDir + "/" + filename
+    const outPath = this.getMidiDataDir() + "/" + filename
     await fs.promises.writeFile(outPath, new Uint8Array(0))
     logger.info(`Placeholder MIDI file written to: ${filename}`)
   }
 
   private async saveFile(filename: string, data: MIDIFile) {
-    const outPath = config.midiDataDir + "/" + filename
+    const outPath = this.getMidiDataDir() + "/" + filename
     await fs.promises.writeFile(outPath, new Uint8Array(data.getContent()))
     logger.info(`MIDI file written to: ${filename}`)
   }
@@ -180,8 +193,8 @@ export default class MidiRecorderPlayer {
 
   public async renameFile(oldFilename: string, newFilename: string): Promise<boolean> {
     if (!newFilename.endsWith(".mid")) newFilename += ".mid"
-    const oldPath = config.midiDataDir + "/" + oldFilename
-    const newPath = config.midiDataDir + "/" + newFilename
+    const oldPath = this.getMidiDataDir() + "/" + oldFilename
+    const newPath = this.getMidiDataDir() + "/" + newFilename
     if (!fs.existsSync(oldPath) || fs.existsSync(newPath)) return false
     await fs.promises.rename(oldPath, newPath)
     logger.info(`MIDI file renamed: ${oldFilename} -> ${newFilename}`)
@@ -189,7 +202,7 @@ export default class MidiRecorderPlayer {
   }
 
   public async deleteFile(filename: string): Promise<boolean> {
-    const path = config.midiDataDir + "/" + filename
+    const path = this.getMidiDataDir() + "/" + filename
     if (!fs.existsSync(path)) return false
     fs.promises.unlink(path)
     logger.info(`MIDI file deleted: ${filename}`)
